@@ -14,4 +14,4 @@ timeout = 120
 
 # Ignore frontend files during build
 [build.ignore]
-files = ["package.json", "package-lock.json", "vite.config.js", "src/", "public/", "index.html", "node_modules/", ".firebase/", "firebase.json", ".firebaserc"]
+files = ["package.json", "package-lock.json", "vite.config.js", "src/", "public/", "index.html", "node_modules/", ".firebase/", "firebase.json", ".firebaserc", "dist/"]
