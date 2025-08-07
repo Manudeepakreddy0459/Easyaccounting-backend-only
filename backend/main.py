@@ -357,7 +357,12 @@ async def process_bank_statement(file: UploadFile = File(...)):
 
 @app.get("/api/health")
 async def health_check():
-    return {"status": "healthy", "api_key_configured": bool(SONAR_API_KEY)}
+    return {
+        "status": "healthy", 
+        "api_key_configured": bool(SONAR_API_KEY),
+        "timestamp": datetime.now().isoformat(),
+        "service": "CA Assistant AI - AutoLedger API"
+    }
 
 if __name__ == "__main__":
     import uvicorn
