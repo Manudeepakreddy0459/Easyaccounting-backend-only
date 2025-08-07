@@ -1,5 +1,6 @@
 [build]
 builder = "nixpacks"
+pre-install = "python -m venv venv && . venv/bin/activate"
 
 [deploy]
 startCommand = "uvicorn main:app --host 0.0.0.0 --port $PORT"
