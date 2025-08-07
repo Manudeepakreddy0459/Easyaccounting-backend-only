@@ -29,9 +29,10 @@ app.add_middleware(
         "https://caassistant.ai",  # Add your custom domain
         "https://www.caassistant.ai",  # Add www version
         "https://app.caassistant.ai",  # If using subdomain
+        "*",  # Allow all origins for development/testing
     ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -289,6 +290,10 @@ def compute_pnl(ledger_entries):
 @app.get("/")
 async def root():
     return {"message": "CA Assistant AI - AutoLedger API is running"}
+
+@app.get("/api/test-cors")
+async def test_cors():
+    return {"message": "CORS is working correctly", "timestamp": datetime.now().isoformat()}
 
 @app.post("/api/autoledger/process")
 async def process_bank_statement(file: UploadFile = File(...)):
