@@ -34,7 +34,7 @@ const AutoLedger = ({ onBackToDashboard = () => {} }) => {
 
     try {
       // Use Railway backend URL - update this with your actual Railway URL
-      const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://easyaccounting-backend-production.up.railway.app';
+      const API_BASE_URL = import.meta.env.VITE_API_URL || 'easyaccounting-backend-only-production.up.railway.app';
       const response = await fetch(`${API_BASE_URL}/api/autoledger/process`, {
         method: 'POST',
         body: formData,

@@ -29,6 +29,7 @@ app.add_middleware(
         "https://caassistant.ai",  # Add your custom domain
         "https://www.caassistant.ai",  # Add www version
         "https://app.caassistant.ai",  # If using subdomain
+        "https://easyaccounting-backend-only-production.up.railway.app", # Frontend URL
         "*",  # Allow all origins for development/testing
     ],
     allow_credentials=True,
