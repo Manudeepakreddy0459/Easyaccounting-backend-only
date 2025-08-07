@@ -1,0 +1,28 @@
+# Frontend files to ignore
+package.json
+package-lock.json
+vite.config.js
+src/
+public/
+index.html
+node_modules/
+.firebase/
+firebase.json
+.firebaserc
+dist/
+build/
+*.js
+*.jsx
+*.ts
+*.tsx
+*.css
+*.html
+
+# Only include backend files
+!backend/
+!backend/main.py
+!backend/requirements.txt
+!backend/start.py
+!railway.toml
+!nixpacks.toml
+!.railwayignore
