@@ -33,7 +33,7 @@ const AutoLedger = ({ onBackToDashboard = () => {} }) => {
     formData.append('file', file);
 
     try {
-      // Use Railway backend URL - update this with your actual Railway URL
+      // Use local backend URL for development
       const API_BASE_URL = 'https://easyaccounting-backend-only-production.up.railway.app';
       const response = await fetch(`${API_BASE_URL}/api/autoledger/process`, {
         method: 'POST',

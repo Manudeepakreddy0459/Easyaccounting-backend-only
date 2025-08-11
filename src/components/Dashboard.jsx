@@ -264,6 +264,16 @@ const Dashboard = () => {
               </div>
             </section>
 
+            {/* Features Grid - Moved to appear right after Key Metrics */}
+            <section className="features-section">
+              <h2>Available Features</h2>
+              <div className="feature-grid">
+                {features.map((feature, idx) => (
+                  <FeatureCard key={idx} {...feature} />
+                ))}
+              </div>
+            </section>
+
             {/* Quick Actions */}
             <section className="quick-actions-section">
               <h2>Quick Actions</h2>
@@ -311,34 +321,36 @@ const Dashboard = () => {
         {activeTab === "clients" && (
           <section className="clients-section">
             <h2>Client Management</h2>
-            <p>Client management features coming soon...</p>
+            <div className="coming-soon-placeholder">
+              <span className="coming-soon-icon">👥</span>
+              <h3>This feature is under construction</h3>
+              <p>We are working hard to bring you a comprehensive client management solution. Stay tuned!</p>
+            </div>
           </section>
         )}
 
         {activeTab === "compliance" && (
           <section className="compliance-section">
             <h2>Compliance Dashboard</h2>
-            <p>Compliance tracking features coming soon...</p>
+            <div className="coming-soon-placeholder">
+              <span className="coming-soon-icon">📋</span>
+              <h3>This feature is under construction</h3>
+              <p>We are building a powerful compliance dashboard to help you stay on top of all your deadlines. Stay tuned!</p>
+            </div>
           </section>
         )}
 
         {activeTab === "reports" && (
           <section className="reports-section">
             <h2>Reports & Analytics</h2>
-            <p>Reporting features coming soon...</p>
+            <div className="coming-soon-placeholder">
+              <span className="coming-soon-icon">📈</span>
+              <h3>This feature is under construction</h3>
+              <p>We are creating a robust reporting and analytics suite to give you valuable insights. Stay tuned!</p>
+            </div>
           </section>
         )}
       </main>
-
-      {/* Features Grid */}
-      <section className="features-section">
-        <h2>Available Features</h2>
-        <div className="feature-grid">
-          {features.map((feature, idx) => (
-            <FeatureCard key={idx} {...feature} />
-          ))}
-        </div>
-      </section>
     </div>
   );
 };

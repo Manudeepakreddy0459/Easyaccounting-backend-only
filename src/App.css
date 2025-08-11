@@ -18,6 +18,8 @@ body {
 
 /* Dashboard Container */
 .dashboard-container {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
   width: 100%;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -127,7 +129,9 @@ body {
   width: 100%;
   max-width: none;
   margin: 0;
-  min-height: calc(100vh - 200px);
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
 /* Section Headers */
@@ -372,13 +376,8 @@ body {
 .features-section {
   padding: 2rem;
   background: white;
-  margin: 2rem;
   border-radius: 16px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  width: calc(100% - 4rem);
-  max-width: none;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 .features-section h2 {
@@ -542,4 +541,47 @@ body {
   .stat-icon {
     margin-bottom: 1rem;
   }
+}
+
+.clients-section,
+.compliance-section,
+.reports-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1; /* Fill vertical space */
+  width: 100%;   /* Fill horizontal space */
+  padding: 2rem;
+}
+
+.coming-soon-placeholder {
+  text-align: center;
+  padding: 4rem 2rem;
+  border-radius: 16px;
+  background-color: #ffffff;
+  width: 100%;
+  max-width: 800px;
+  margin: auto;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
+}
+
+.coming-soon-icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  color: #667eea;
+}
+
+.coming-soon-placeholder h3 {
+  font-size: 1.75rem;
+  color: #1e293b;
+  margin-bottom: 1rem;
+}
+
+.coming-soon-placeholder p {
+  font-size: 1rem;
+  color: #64748b;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
 }

@@ -15,6 +15,7 @@ from datetime import datetime
 from typing import List, Dict, Any
 import tempfile
 import shutil
+import json
 
 app = FastAPI(title="CA Assistant AI - AutoLedger API", version="1.0.0")
 
@@ -144,22 +145,58 @@ def call_sonar_api(prompt, api_key):
 
 def classify_flagged(flagged_entries, api_key):
     results = []
-    for entry in flagged_entries:
-        narration = ' '.join(entry) if isinstance(entry, list) else str(entry)
-        prompt = (
-            f"Classify this bank statement entry: '{narration}'. "
-            f"Is it income, expense, transfer, or other? Please provide a brief explanation."
-        )
-        ai_suggestion = call_sonar_api(prompt, api_key)
+    
+    # Combine all flagged entries into a single prompt
+    narrations = [' '.join(entry) if isinstance(entry, list) else str(entry) for entry in flagged_entries]
+    
+    if not narrations:
+        return results
+
+    prompt = (
+        f"Classify the following bank statement entries. For each entry, determine if it is income, expense, transfer, or other, and provide a brief explanation. Return the results as a JSON array where each object has 'narration' and 'ai_suggestion' keys.\n\n"
+        + "\n".join([f"- '{n}'" for n in narrations])
+    )
+    
+    ai_response_str = call_sonar_api(prompt, api_key)
+    
+    try:
+        # Attempt to parse the AI response as JSON
+        ai_results = json.loads(ai_response_str)
+        if isinstance(ai_results, list) and all(isinstance(item, dict) and 'narration' in item and 'ai_suggestion' in item for item in ai_results):
+            return ai_results
+    except json.JSONDecodeError:
+        # Fallback for non-JSON responses or parsing errors
+        # This part handles the case where the AI might not return a perfect JSON array.
+        # It tries to associate suggestions with narrations based on the response format.
+        
+        # A simple heuristic: split by newline and try to match
+        ai_suggestions = ai_response_str.strip().split('\n')
+        
+        for i, narration in enumerate(narrations):
+            suggestion = ai_suggestions[i] if i < len(ai_suggestions) else "No specific suggestion found."
+            results.append({
+                "narration": narration,
+                "ai_suggestion": suggestion,
+                "category": None,
+                "date": "",
+                "amount": "",
+                "counterparty": "",
+                "action": None
+            })
+        return results
+
+    # Fallback if JSON parsing fails and the simple heuristic is not applicable
+    for narration in narrations:
         results.append({
             "narration": narration,
-            "ai_suggestion": ai_suggestion,
+            "ai_suggestion": "Could not parse AI response.",
             "category": None,
             "date": "",
             "amount": "",
             "counterparty": "",
             "action": None
         })
+        
     return results
 
 def extract_counterparty(narrative):
