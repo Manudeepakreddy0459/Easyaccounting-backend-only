@@ -46,10 +46,13 @@ class MultiBankParser:
                 'amount_patterns': [
                     r'([\d,]+\.\d{2})\s*Dr$',
                     r'([\d,]+\.\d{2})\s*Cr$',
-                    r'([\d,]+\.\d{2})\s*$'
+                    r'([\d,]+\.\d{2})\s*DR$',
+                    r'([\d,]+\.\d{2})\s*CR$',
+                    r'([\d,]+\.\d{2})\s*$',
+                    r'(\d{1,3}(?:,\d{3})*\.\d{2})$'
                 ],
-                'credit_keywords': ['Cr', 'CREDIT', 'CREDITED', 'RECEIVED'],
-                'debit_keywords': ['Dr', 'DEBIT', 'DEBITED', 'PAID'],
+                'credit_keywords': ['Cr', 'CR', 'CREDIT', 'CREDITED', 'RECEIVED', 'FROM'],
+                'debit_keywords': ['Dr', 'DR', 'DEBIT', 'DEBITED', 'PAID', 'TO'],
                 'upi_pattern': r'UPI/[A-Z]+/\d+',
                 'account_patterns': ['ICICI', 'ICICI BANK']
             },
@@ -164,9 +167,16 @@ class MultiBankParser:
         config = self.bank_patterns[bank_code]
         
         for pattern in config['amount_patterns']:
-            match = re.search(pattern, text, re.IGNORECASE)
-            if match:
-                return match.group(1)
+            try:
+                match = re.search(pattern, text, re.IGNORECASE)
+                if match:
+                    amount = match.group(1)
+                    # Validate amount format
+                    if re.match(r'^\d{1,3}(?:,\d{3})*\.\d{2}$', amount):
+                        return amount
+            except Exception as e:
+                logger.warning(f"Amount pattern failed for pattern '{pattern}': {e}")
+                continue
         
         return None
     
@@ -195,51 +205,61 @@ class MultiBankParser:
     
     def extract_upi_reference(self, text: str, bank_code: str) -> str:
         """Extract UPI reference from text"""
-        config = self.bank_patterns[bank_code]
-        match = re.search(config['upi_pattern'], text)
-        return match.group(0) if match else ""
+        try:
+            config = self.bank_patterns[bank_code]
+            match = re.search(config['upi_pattern'], text)
+            return match.group(0) if match else ""
+        except Exception as e:
+            logger.warning(f"UPI extraction failed: {e}")
+            return ""
     
     def process_transaction_lines(self, lines: List[str], bank_code: str) -> Optional[Dict[str, Any]]:
         """Process transaction lines based on bank format"""
         if not lines:
             return None
         
-        config = self.bank_patterns[bank_code]
-        first_line = lines[0].strip()
-        
-        # Find date
-        date_match = re.search(config['date_pattern'], first_line)
-        if not date_match:
+        try:
+            config = self.bank_patterns[bank_code]
+            first_line = lines[0].strip()
+            
+            # Find date
+            date_match = re.search(config['date_pattern'], first_line)
+            if not date_match:
+                logger.debug(f"No date found in line: {first_line}")
+                return None
+            
+            date_str = date_match.group(0)
+            date = self.parse_date(date_str, bank_code)
+            
+            # Combine all lines for processing
+            full_text = ' '.join(lines)
+            
+            # Extract amount
+            amount = self.extract_amount(full_text, bank_code)
+            if not amount:
+                logger.debug(f"No amount found in text: {full_text[:100]}...")
+                return None
+            
+            # Determine direction
+            direction = self.determine_direction(full_text, bank_code)
+            
+            # Extract UPI reference
+            upi_reference = self.extract_upi_reference(full_text, bank_code)
+            
+            # Create narrative (remove date and amount)
+            narrative = full_text.replace(date_str, '').strip()
+            
+            return {
+                'date': date,
+                'upi_reference': upi_reference,
+                'amount': amount,
+                'direction': direction,
+                'narrative': narrative,
+                'bank_type': bank_code
+            }
+        except Exception as e:
+            logger.error(f"Error processing transaction lines: {e}")
             return None
-        
-        date_str = date_match.group(0)
-        date = self.parse_date(date_str, bank_code)
-        
-        # Combine all lines for processing
-        full_text = ' '.join(lines)
-        
-        # Extract amount
-        amount = self.extract_amount(full_text, bank_code)
-        if not amount:
-            return None
-        
-        # Determine direction
-        direction = self.determine_direction(full_text, bank_code)
-        
-        # Extract UPI reference
-        upi_reference = self.extract_upi_reference(full_text, bank_code)
-        
-        # Create narrative (remove date and amount)
-        narrative = full_text.replace(date_str, '').strip()
-        
-        return {
-            'date': date,
-            'upi_reference': upi_reference,
-            'amount': amount,
-            'direction': direction,
-            'narrative': narrative,
-            'bank_type': bank_code
-        }
     
     def parse_pdf(self, pdf_path: str) -> Tuple[List[Dict[str, Any]], List[List[str]], str]:
         """Parse PDF and return transactions, flagged entries, and detected bank"""

@@ -460,6 +460,9 @@ async def process_bank_statement(file: UploadFile = File(...)):
             )
         except asyncio.TimeoutError:
             raise HTTPException(status_code=408, detail="PDF processing timeout - file may be too large or complex")
+        except Exception as e:
+            logger.error(f"PDF parsing error: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"PDF parsing failed: {str(e)}")
         
         # Clean up temp file
         os.unlink(temp_path)
