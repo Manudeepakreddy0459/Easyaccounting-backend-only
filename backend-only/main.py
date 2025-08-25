@@ -16,6 +16,7 @@ import tempfile
 import shutil
 import json
 import time
+from multi_bank_parser import multi_bank_parser
 
 # Load environment variables from .env file
 load_dotenv()
@@ -451,10 +452,10 @@ async def process_bank_statement(file: UploadFile = File(...)):
             shutil.copyfileobj(file.file, tmp_file)
             temp_path = tmp_file.name
         
-        # Parse PDF with timeout
+        # Parse PDF with multi-bank parser and timeout
         try:
-            parsed_transactions, flagged = await asyncio.wait_for(
-                asyncio.to_thread(parse_pdf_stage_optimized, temp_path),
+            parsed_transactions, flagged, detected_bank = await asyncio.wait_for(
+                asyncio.to_thread(multi_bank_parser.parse_pdf, temp_path),
                 timeout=PDF_TIMEOUT
             )
         except asyncio.TimeoutError:
@@ -499,7 +500,9 @@ async def process_bank_statement(file: UploadFile = File(...)):
                 "total_income": pnl_summary["total_income"],
                 "total_expense": pnl_summary["total_expense"],
                 "net_profit": pnl_summary["net_profit"],
-                "processing_time_seconds": round(processing_time, 2)
+                "processing_time_seconds": round(processing_time, 2),
+                "detected_bank": multi_bank_parser.bank_patterns[detected_bank]['name'],
+                "bank_code": detected_bank
             },
             "transactions": parsed_transactions,
             "flagged_transactions": ai_results,
@@ -524,6 +527,14 @@ async def health_check():
             "ai_timeout_seconds": AI_TIMEOUT,
             "pdf_timeout_seconds": PDF_TIMEOUT
         }
+    }
+
+@app.get("/api/supported-banks")
+async def get_supported_banks():
+    """Get list of supported banks"""
+    return {
+        "supported_banks": multi_bank_parser.get_supported_banks(),
+        "total_banks": len(multi_bank_parser.get_supported_banks())
     }
 
 if __name__ == "__main__":

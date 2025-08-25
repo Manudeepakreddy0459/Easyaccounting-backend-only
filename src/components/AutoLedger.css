@@ -251,6 +251,13 @@
   border-bottom: 2px solid #f1f5f9;
 }
 
+.results-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
 .processing-time {
   background: linear-gradient(135deg, #10b981, #059669);
   color: white;
@@ -258,7 +265,42 @@
   border-radius: 20px;
   font-size: 0.9rem;
   font-weight: 600;
-  margin: 0 1rem;
+}
+
+.detected-bank {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.supported-banks {
+  margin: 1.5rem 0;
+  text-align: center;
+}
+
+.banks-label {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.bank-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.bank-tag {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
 .results-header h2 {

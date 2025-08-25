@@ -139,10 +139,22 @@ const AutoLedger = ({ onBackToDashboard = () => {} }) => {
 
       {!results && (
         <div className="upload-section">
-          <div className="upload-card">
-            <div className="upload-icon">📄</div>
-            <h3>Upload Bank Statement</h3>
-            <p>Supported format: PDF (SBI Bank Statements)</p>
+                      <div className="upload-card">
+              <div className="upload-icon">📄</div>
+              <h3>Upload Bank Statement</h3>
+              <p>Supported format: PDF (All Major Indian Banks)</p>
+              <div className="supported-banks">
+                <p className="banks-label">Supported Banks:</p>
+                <div className="bank-tags">
+                  <span className="bank-tag">SBI</span>
+                  <span className="bank-tag">HDFC</span>
+                  <span className="bank-tag">ICICI</span>
+                  <span className="bank-tag">Axis</span>
+                  <span className="bank-tag">Kotak</span>
+                  <span className="bank-tag">YES Bank</span>
+                  <span className="bank-tag">+ More</span>
+                </div>
+              </div>
             
             <form onSubmit={handleSubmit} className="upload-form">
               <div className="file-input-wrapper">
@@ -200,11 +212,18 @@ const AutoLedger = ({ onBackToDashboard = () => {} }) => {
         <div className="results-section">
           <div className="results-header">
             <h2>Processing Results</h2>
-            {results.summary && results.summary.processing_time_seconds && (
-              <div className="processing-time">
-                ⚡ Processed in {results.summary.processing_time_seconds}s
-              </div>
-            )}
+            <div className="results-meta">
+              {results.summary && results.summary.detected_bank && (
+                <div className="detected-bank">
+                  🏦 {results.summary.detected_bank}
+                </div>
+              )}
+              {results.summary && results.summary.processing_time_seconds && (
+                <div className="processing-time">
+                  ⚡ Processed in {results.summary.processing_time_seconds}s
+                </div>
+              )}
+            </div>
             <button 
               className="new-upload-button"
               onClick={() => {

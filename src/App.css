@@ -132,6 +132,7 @@ body {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  min-height: calc(100vh - 140px); /* Account for header and nav height */
 }
 
 /* Section Headers */
@@ -553,17 +554,23 @@ body {
   flex-grow: 1; /* Fill vertical space */
   width: 100%;   /* Fill horizontal space */
   padding: 2rem;
+  min-height: calc(100vh - 200px); /* Ensure full page height */
 }
 
 .coming-soon-placeholder {
   text-align: center;
-  padding: 4rem 2rem;
+  padding: 6rem 2rem;
   border-radius: 16px;
   background-color: #ffffff;
   width: 100%;
-  max-width: 800px;
+  max-width: 900px;
   margin: auto;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .coming-soon-icon {
