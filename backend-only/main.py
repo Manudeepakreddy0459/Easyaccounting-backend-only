@@ -65,90 +65,7 @@ BANK_ACCOUNT = "Current Account"
 DEFAULT_INCOME_ACCOUNT = "Income"
 DEFAULT_EXPENSE_ACCOUNT = "Expenses"
 
-def process_raw_lines(lines):
-    """Optimized transaction line processing"""
-    if not lines:
-        return None
-    
-    first_line = lines[0].strip()
-    date_match = re.match(r'^(\d{1,2} [A-Za-z]{3} \d{4})', first_line)
-    if not date_match:
-        return None
-    
-    date = date_match.group(1)
-    remainder = ' '.join(lines)[len(date):].strip()
-    
-    # Optimized regex patterns
-    amount_match = re.search(r'TRANSFER[^\d]*([\d,]+\.\d{2})', remainder, re.IGNORECASE)
-    if not amount_match:
-        amount_match = re.search(r'(\d{1,3}(?:,\d{3})*\.\d{2})$', remainder)
-    
-    upi_id_match = re.search(r'UPI/[CD]R/\d{8,}', remainder)
-    
-    # Optimized direction detection
-    remainder_upper = remainder.upper()
-    is_credit = any(kw in remainder_upper for kw in ['CREDITED', 'UPI/CR', 'BY TRANSFER', 'FROM'])
-    is_debit = any(kw in remainder_upper for kw in ['DEBITED', 'UPI/DR', 'TO TRANSFER', 'TO'])
-    
-    if not amount_match:
-        return None
-    
-    return {
-        'date': date,
-        'upi_reference': upi_id_match.group(0) if upi_id_match else "",
-        'amount': amount_match.group(1),
-        'direction': 'credit' if is_credit else 'debit' if is_debit else 'unknown',
-        'narrative': remainder
-    }
-
-def parse_pdf_stage_optimized(pdf_path):
-    """Optimized PDF parsing with better error handling"""
-    transactions = []
-    ambiguous_flags = []
-    
-    try:
-        with pdfplumber.open(pdf_path) as pdf:
-            # Process pages more efficiently
-            for page_num, page in enumerate(pdf.pages):
-                try:
-                    text = page.extract_text()
-                    if not text:
-                        continue
-                    
-                    lines = text.split('\n')
-                    buffer = []
-                    
-                    for line in lines:
-                        line = line.strip()
-                        if re.match(r'^\d{1,2} [A-Za-z]{3} \d{4}', line):
-                            if buffer:
-                                txn = process_raw_lines(buffer)
-                                if txn:
-                                    transactions.append(txn)
-                                else:
-                                    ambiguous_flags.append(buffer)
-                                buffer = []
-                            buffer.append(line)
-                        else:
-                            buffer.append(line)
-                    
-                    # Process remaining buffer
-                    if buffer:
-                        txn = process_raw_lines(buffer)
-                        if txn:
-                            transactions.append(txn)
-                        else:
-                            ambiguous_flags.append(buffer)
-                            
-                except Exception as e:
-                    print(f"Error processing page {page_num}: {e}")
-                    continue
-                    
-    except Exception as e:
-        print(f"Error opening PDF: {e}")
-        raise HTTPException(status_code=400, detail=f"Error reading PDF: {str(e)}")
-    
-    return transactions, ambiguous_flags
+# Old SBI-only parsing functions removed - now using multi_bank_parser
 
 async def call_sonar_api_async(prompt, api_key, timeout=AI_TIMEOUT):
     """Asynchronous AI API call with timeout"""
@@ -281,10 +198,10 @@ def clean_and_classify_transactions(parsed_transactions):
     
     for txn in parsed_transactions:
         try:
-            # Optimized date parsing
-            date_norm = datetime.strptime(txn['date'], "%d %b %Y").strftime("%Y-%m-%d")
-        except Exception:
+            # Date is already normalized by multi_bank_parser
             date_norm = txn['date']
+        except Exception:
+            date_norm = txn.get('date', '')
         
         try:
             amt = float(txn['amount'].replace(',', ''))
@@ -461,7 +378,7 @@ async def process_bank_statement(file: UploadFile = File(...)):
         except asyncio.TimeoutError:
             raise HTTPException(status_code=408, detail="PDF processing timeout - file may be too large or complex")
         except Exception as e:
-            logger.error(f"PDF parsing error: {str(e)}")
+            print(f"PDF parsing error: {str(e)}")
             raise HTTPException(status_code=500, detail=f"PDF parsing failed: {str(e)}")
         
         # Clean up temp file

@@ -61,8 +61,11 @@ const AutoLedger = ({ onBackToDashboard = () => {} }) => {
         } else if (response.status === 400) {
           const errorData = await response.json();
           throw new Error(errorData.detail || 'Invalid file format or no transactions found');
+        } else if (response.status === 500) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || 'Server error while processing your bank statement. Please try again.');
         } else {
-          throw new Error(`Server error: ${response.status}`);
+          throw new Error(`Server error: ${response.status} - Please try again or contact support if the issue persists.`);
         }
       }
 
@@ -84,6 +87,12 @@ const AutoLedger = ({ onBackToDashboard = () => {} }) => {
     } catch (err) {
       if (err.name === 'AbortError') {
         setError('Request timeout - the processing is taking too long. Please try again or use a smaller file.');
+      } else if (err.message.includes('Failed to fetch')) {
+        setError('Unable to connect to the server. Please check your internet connection and try again.');
+      } else if (err.message.includes('PDF parsing failed')) {
+        setError('Unable to read the PDF file. Please ensure it\'s a valid bank statement PDF and try again.');
+      } else if (err.message.includes('No transactions found')) {
+        setError('No transactions were found in the PDF. Please ensure it\'s a valid bank statement with transaction data.');
       } else {
         setError(`Error processing file: ${err.message}`);
       }
@@ -170,7 +179,17 @@ const AutoLedger = ({ onBackToDashboard = () => {} }) => {
                 </label>
               </div>
               
-              {error && <div className="error-message">{error}</div>}
+              {error && (
+                <div className="error-message">
+                  {error}
+                  {error.includes('No transactions found') && (
+                    <div className="error-help">
+                      <p><strong>Supported Banks:</strong> SBI, HDFC, ICICI, Axis, Kotak, YES Bank, and more.</p>
+                      <p>Make sure your PDF contains transaction data in a standard bank statement format.</p>
+                    </div>
+                  )}
+                </div>
+              )}
               
               <button 
                 type="submit" 
